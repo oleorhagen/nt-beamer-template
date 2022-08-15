@@ -1,0 +1,314 @@
+#+options: ':nil *:t -:t ::t <:t H:2 \n:nil ^:t arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:t f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:t todo:t |:t
+#+title: Deploy Software Updates for Linux Devices
+#+subtitle: Releases and Versioning
+#+date: \today
+#+author: Ole Petter Orhagen
+#+email: ole.orhagen@northern.tech
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
+#+creator: Emacs 28.1 (Org mode 9.5.2)
+#+cite_export:
+
+#+startup: beamer
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [smaller]
+
+#+COLUMNS: %40ITEM %10BEAMER_env(Env) %9BEAMER_envargs(Env Args) %4BEAMER_col(Col) %10BEAMER_extra(Extra)
+
+#+LaTeX_HEADER: \mode<beamer>{\usetheme{Mender}}
+
+* Agenda
+
+** Releases and Versioning
+
+- What is a release?
+- How is it given meaning?
+- How do we do it?
+- How do other people do it?
+
+** What is a release
+
+- Mender as a whole product does a release once each quarter (supposed to at least).
+
+- Mender as a product is versioned according to the semantic versioning convention
+
+- *Only part of engineering which directly delivers value to customers*
+
+- Point release
+
+- Rolling release
+
+- Time based
+
+- Feature based
+
+- Why is it so hard?
+
+Can't everyone just run master?
+
+- Quality vs frequency
+
+  End user work vs company internal work
+
+
+
+** Giving releases meaning
+
+The current Dogma (in a good way):
+
+[[./hst.png]]
+
+** How Mender does releases
+
+The legendary [[https://docs.google.com/spreadsheets/d/1FUnzhqIPNDZCnDaF16Mgp0coPfOThyqt5bB5HWP2_LM/edit#gid=1259228629][release-checklist]]
+
+https://docs.google.com/spreadsheets/d/1FUnzhqIPNDZCnDaF16Mgp0coPfOThyqt5bB5HWP2_LM/edit#gid=1259228629
+
+** How CFEngine does releases
+
+Also using a release checklist:
+
+https://tracker.mender.io/browse/ENT-8680
+
+** What do we release ?
+
+We release all components bundled into one _Mender semantic release_, which once
+again consists of many components, each with their own semantic version.
+
+#+ATTR_LATEX: :scale 0.3
+[[./releasebox.png]]
+
+** How do other people do it?
+
++ Strangely hard to find out
++ Most information on straight backend companies
++ Companies without full control over where the software is deployed are not vocal about it
++ Reddit gave me some feeling that this is a pain pretty much everywhere
+
+** What consists a Mender release of
+
++ tags
++ containers
++ Debian packages
++ Doc updates and branch publication
++ Hub updates
++ Changelogs
++ Api-docs
++ hardware-verification
++ Dependency updates
++ Manual testing
+
+** Where we are at the moment
+
+
+** Software delivery and operational performance
+
+- _DORA_ metrics, used in measuring a companies efficiency in going from value-added to value provided to the customers
+
+- Deliver software quickly and reliably
+- Our on-prem customers want features faster, in other words, the same experience as hosted-mender customers get.
+
+https://services.google.com/fh/files/misc/state-of-devops-2021.pdf
+
+- So, it seems our software delivery performance is about Medium...
+
+
+| Deployment frequency      | Elite    | High          | Medium              | Low         |
+|---------------------------+----------+---------------+---------------------+-------------|
+| Deployment frequency      | daily    | weekly/montly | monthly - bi-yearly | > bi-yearly |
+| Lead time for changes     | < 1 hour | 1 - 7 days    | 1 - 6 months        | > 6 months  |
+| Time to restore a service | < 1 hour | < 1 day       | 1 - 7 days          | > 6 months  |
+| Change failure rate       | 0-15%    | 16-30%        | 16-30%              | 16-30%      |
+
+
+** Fun aside:
+
+There is something in the DORA protocol called a release train engineer!
+
+[[./releasetrain.jpg]]
+
+** Pipe dream
+
+Big magic button
+
+#+ATTR_LATEX: :scale 0.1
+[[./greenbutton.jpg]]
+
+** The current release process
+
+Why it sometimes takes a lot of time:
+
+1. build-tags
+2. test
+3. failure -> Go back to step 1
+4. Release
+
+  + Some issues can hold back the release for quite a long time, when 99% of our
+   functionality is there. i.e., one minor bug in one component can hold back
+   the release for weeks.
+
+** Why do we want to change it
+
++ Our on-prem customers want features faster, in other words, the same experience as hosted-mender customers get. -- Deliver features faster.
+
++ Word on the street is our customers both want and accept such a setup.
+
++ This means we have to be more _agile_, and get our lead-time down significantly (time from value is committed, to it is released to production).
+
++ Which in turn means an increased release cadence.
+
+** What should we change in order to deliver this
+
+Suggestion:
+
++ Start thinking about our software as separate components, as opposed to one giant bundle.
++ Split it into: Backend, client, and independent components, and be able to release them all independently of eachother.
+
+** 1. Split the backend from the rest of the on-prem release
+
+The backend can deliver a lot of value, while it actually has a lot fewer
+chokeholds in the release process.
+
+** What consists a _backend_ release of
+
++ tags
++ containers
++ Changelogs
++ Api-docs
++ Manual testing
++ -Debian packages-
++ Doc updates and branch publication
++ -Hub updates-
++ -hardware-verification-
++ -Dependency updates- (Done continually by Dependabot)
+
+
+** How to deliver this
+
+We split the backend release from the client release, and also add the
+opportunity to do independent component releases.
+
++ Thus we start looking at our software more as separate components, than one giant bundle.
+
+** New Backend Release procedure
+
+This will probably mean that the backend team is fully managing all their
+releases independently.
+
+** Option 1: Sync with the hosted Mender release
+
+Essentially just release a mirror of the hosted-mender release for on-prem consumption.
+
+** Option 2: Rolling release
+
+
+#+ATTR_LATEX: :scale 0.3
+[[./alinux.png]]
+
+Have the backend continually released, whilst not maintaining older branches.
+
+This enables us to release new features to all our customers much faster,
+instead of them having to wait for the next release cycle.
+
+On the other hand, staying on older versions for a long time, is no longer a viable option.
+
+** Viability: The Backend Client interoptability myth
+
+It is possible!
+
+Although, there are some features which require newer clients to work, the
+backend is _always_ backwards compatible, and as such, there should be *no* risk
+in upgrading for an on-prem user either. This needs to be clearly communicated.
+
+Other benefits include fixing security bugs much faster.
+
++ It seems some customers believe that the client and the backend versions need
+  to be in sync - although we all know this is not true.
+
+
+** New client release procedure
+
+The client release proceeds pretty much in the same way it is now, on a quartely basis.
+
+** New Independent component release procedure
+
+We should have the ability to release independent components separately.
+
+So CLI tools, which add features matching new backend functionality will be
+released accordingly, and independent of all other components even.
+
+** What happens when there are dependencies between the backend and the client
+
+Shared functionality introduces a dependency between the backend and the client,
+i.e., the one will not work without the other for the new feature.
+
++ Raises a lot of questions?
+
+  Should we need to wait, and release the features at the same time,
+  however, regular patch releases can proceed in parallell.
+
+  Or can we afford to release new features to the backend, before the client is ready even?
+
+  Feature switches?
+
+  Feature branches?
+
+  Changing our workflow?
+
+
+** What to do in the case of problems
+
+How do we roll back changes, if a release is broken?
+
+I really see no other option than a new release.
+
++ New release
++ This requires customers to be aware that upgrading is easy
+
+** Release naming schemes
+
++ Internal/external naming ?
+
++ Should we change the naming of our components ?
+
+  The matching naming of the client and the 'whole release' is unfortunate imo.
+  causes confusion.
+
++ Separate naming of the individual components, and split independent components from the release completely, i.e., release them on demand.
+
+
+** Naming of backend releases
+
+
++ Maybe name the backend separately - like mender-backend-3.1.x, etc?
+
+
+** Client release naming
+
+
++ How to seperate it from the backend versioning, and how to tie it in with
+features in the backend
+
++ Name it, so that it is clear it is a separate component, and always works with the backend.
+
+  Maybe bump the client version number by say, 10, so that they no longer align
+
++ Giant compatibility matrix, or smart naming?
+
+** Independent component releases
+
+I suggest unversioning them, and having a support scheme, only in the case of breaking changes.
+
+** Implications
+
++ Docs probably need a rethink
++ Most likely a split as well, backend/client
++ Features are marked with minimum client version
++ Gui is always following the latest backend
++ Breaking changes still need a major bump, and most likely some maintenance of a legacy backend
++ What is the support for the aforementioned old backend
++ For the backend, deployment and releasing will be one and the same operation

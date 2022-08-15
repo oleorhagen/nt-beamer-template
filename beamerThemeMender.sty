@@ -1,0 +1,101 @@
+\newif\ifmetronav
+\metronavtrue
+\DeclareOption{SegoeUI}{
+  \setsansfont[Ligatures=TeX]{Segoe UI Light}
+}
+\DeclareOption{nonav}{\metronavfalse}
+\ProcessOptions
+
+\RequirePackage{tikz}
+\RequirePackage[overlay, absolute]{textpos}
+\usetikzlibrary{arrows.meta, shapes.misc}
+
+\newcommand{\metro@logo}{}
+\renewcommand{\logo}[1]{\renewcommand{\metro@logo}{#1}}
+\AtBeginDocument{\setbeamertemplate{logo}{}}
+
+%% Allow the images to be found in the figures folder
+\graphicspath{{figures/}}
+
+
+%% The Mender colors
+\definecolor{MenderPurple}{HTML}{5D0F43}
+\definecolor{MenderGreen}{HTML}{015969}
+\definecolor{MenderGray}{HTML}{404041}
+
+%% White canvas plz
+\setbeamercolor{background canvas}{bg=white}
+
+%%% Titlepage
+
+\setbeamercolor{title}{bg=MenderGreen}
+\setbeamercolor{subtitle}{bg=white, fg=MenderGreen}
+
+\setbeamertemplate{title page}{%
+%%   \begin{textblock*}{\paperwidth}[1,0](\paperwidth,0.3cm)
+%%    \begin{beamercolorbox}[right,rightskip=0.2cm]{logo}
+%%      \usebeamerfont{logo}\metro@logo
+%%     \end{beamercolorbox}
+%%   \end{textblock*}
+    \begin{tikzpicture}[overlay,remember picture]
+      \node at (current page.center){
+        \includegraphics[width=4cm]{menderlogo}
+      };
+     \end{tikzpicture}%
+  \begin{textblock*}{12cm}(1cm,5cm)
+    \begin{beamercolorbox}[wd=11cm, dp=0.4cm, ht=1cm, leftskip=0.1cm]{title page header}
+      \usebeamerfont{title}\usebeamercolor{title}\inserttitle%
+    \end{beamercolorbox}%
+  \end{textblock*}
+  \begin{textblock*}{12cm}(1cm,6.7cm)
+    \begin{beamercolorbox}[leftskip=0.1cm]{subtitle}
+      \usebeamerfont{subtitle}\insertsubtitle%
+    \end{beamercolorbox}
+  \end{textblock*}
+}
+
+%% Added in the tikz picture inserted.
+%% \titlegraphic {
+%%   \begin{tikzpicture}[overlay,remember picture]
+%%     \node[left=0.2cm] at (current page.60){
+%%       \includegraphics[width=4cm]{menderlogo}
+%%     };
+%%   \end{tikzpicture}
+%% }
+
+%%% Frames
+
+%% Set the frame headers to Purple, with white text
+\setbeamercolor{frametitle}{parent={normal text}, bg=MenderPurple, fg=white}
+
+%% Black text for the main slides - TODO - Maybe use green later
+\setbeamercolor{normal text}{fg=black, bg=}
+
+%% TODO - maybe make a logo command
+%% Logo for every slide (Lower left corner)
+%% \logo {
+%%   \begin{tikzpicture}[overlay,remember picture]
+%%     \node[left=0.2cm] at (current page.50){
+%%       \includegraphics[width=6cm]{menderlogo}
+%%     };
+%%   \end{tikzpicture}
+%% }
+
+\setbeamertemplate{footline} {
+  \ifnum \theframenumber=1
+  % Draw the triangle in the lower left corner
+  \begin{tikzpicture}[overlay,remember picture]
+    \fill[fill=MenderPurple] (0,0)
+    -- (1,0)
+    -- (0,1)
+    -- cycle;
+  \end{tikzpicture}
+  \else
+  % These would be all the following frames
+  \hfill%
+  \includegraphics[height=0.5cm]{menderlogo}%
+  \vspace{.3em}%
+  \fi
+}
+
+\setbeamerfont{logo}{size=\small}
